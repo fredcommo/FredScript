@@ -1,0 +1,67 @@
+
+setwd("D:/Projet kinases/Sequences")
+egfr <- read.csv("EGFR.txt", skip = 1, header = F, sep = "\t")
+seqegfr <- c()
+for(i in 1:nrow(egfr)) seqegfr <- paste(seqegfr, as.character(egfr[i,]), sep = "")
+
+
+# Utiliser "D:/Projet kinases/Kinases Database/Phosphorylation_site_dataset"
+# pour des recherches en batch sur proteines et p-Position
+
+setwd("D:/Projet kinases/Kinases Database")
+myDB <- read.csv("Phosphorylation_site_dataset.txt", header = T, skip = 0, sep = "\t")
+
+library(seqinr)
+
+# acc_num à rehercher
+
+pept.seq <- c()
+# Prot = "EGFR"; Target = 1069
+# Prot = "EGFR"; Target = 1110
+# Prot = "STAT3"; Target = 705
+# Prot = "JNK1"; Target = 185
+# Prot = "ERK1"; Target = 204
+# Prot = "Raf1"; Target = 340
+# Prot = "PLCG1"; Target = 771
+# Prot = "Src"; Target = 216
+# Prot = "HER2"; Target = 1248
+
+
+prot.index <- which(myDB$NAME==Prot & myDB$SPECIES=="human")
+acc = unique(myDB$ACC.[prot.index])
+acc <- as.character(acc)
+rsd.index <- which(substr(myDB$RSD[prot.index], 2, 10)== Target)
+rsd <- myDB$RSD[prot.index][rsd.index]
+rsd <- as.character(rsd)
+myDB[prot.index, 1:6]
+
+# renvoie le nom de la base contenant l'acc_num
+# search <- where.is.this.acc(acc, stopAtFirst = TRUE)
+
+# ouvre la base
+# choosebank(search)
+choosebank("swissprot")
+
+#crée une sortie 'egfr' contenant les infos (seq et autre) correspondant à l'argument recherché (AC=)
+id <- paste("AC=", acc, sep = "")	# paste("AC=", acc, "sp=homo sapiens", sep = "")
+mySeq <- getSequence(myquery <- query(Prot, id)$req, as.string = T)[[1]]
+myName <- getName(myquery)
+
+step = 2
+
+for(len in c(7, 11, 15)){
+	first = Target - len ; first
+	last = Target + step ; last
+	for(i in seq(first, last, by = step)){
+		tmp <- substr(mySeq, i, i + (len-1))
+		start.pos <- i
+		pept.seq <- rbind(pept.seq, c(myName, acc, Target, rsd, start.pos, tmp))
+		}
+	}
+colnames(pept.seq) <- c("Name", "AccNum", "Target.Pos", "RSD", "Pept.Start.Pos", "Sequence")
+as.data.frame(pept.seq)
+nrow(pept.seq)
+
+
+
+

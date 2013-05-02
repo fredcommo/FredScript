@@ -1,0 +1,160 @@
+setwd("D:/Projets individuels/A.Chauchereau/transcriptome")
+
+library(XML)
+library(annotate)
+
+gsearch <- function (geneId){
+	gsrch.stem <- "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
+	gsrch.mode <- "db=gene&term="
+	doc <- xmlTreeParse(paste(gsrch.stem, gsrch.mode, geneId, sep=""),isURL = TRUE, useInternalNodes = TRUE)
+	sapply(c("//Id"), xpathApply, doc = doc, fun = xmlValue)
+	}
+
+gsummary <- function (id){
+	sum.stem <- "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?"
+	sum.mode <- "db=gene&id="
+	doc <- xmlTreeParse(paste(sum.stem, sum.mode, id, sep=""), isURL = TRUE, useInternalNodes = TRUE)
+	sapply(c("//Item"), xpathApply, doc = doc, fun=xmlValue)
+	}
+
+esearch <- function (term){
+	srch.stem <- "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
+	srch.mode <- "db=pubmed&retmax=1000&retmode=xml&term="
+	doc <-xmlTreeParse(paste(srch.stem,srch.mode,term,sep=""), isURL = TRUE, useInternalNodes = TRUE)
+	sapply(c("//Id"), xpathApply, doc = doc, fun = xmlValue)
+	}
+
+data <- read.csv("Top1000_L5.txt", header=T, skip=0, sep="\t")
+idlist <- levels(data$UniGeneID)[-1]
+
+pmids_taxanes <- c()
+pmids_Prost <- c()
+pmids_Tax_Prost <- c()
+pmids_Meth <- c()
+sumlist <- data.frame(data, GeneSymb = NA, entrezGeneID = 0, numtaxanes = 0, numProstate = 0, numTax_Prost = 0, numMeth = 0)
+
+keywd1 <- "docetaxel OR taxane OR taxoid"
+keywd2 <- "prostate"
+keywd3 <- paste("(", "(", keywd1, ")", "AND", keywd2, ")")
+keywd4 <- "methylation"
+
+for (i in 804:nrow(data)){			#nrow(data)
+	geneId <- data$EntrezGeneID[i]	# clusterin CLU
+	geneId <- as.character(geneId)
+	if(!is.na(geneId) & !is.null(geneId)){
+		test <- gsummary(geneId)
+		gene.symb <- as.character(as.table(test)[1])
+		gene.name <- as.character(as.table(test)[2])
+
+		pmid1 <- esearch(paste("(", gene.symb, "OR", gene.name, ")", "AND", keywd1))
+		pmid2 <- esearch(paste("(", gene.symb, "OR", gene.name, ")", "AND", keywd2))
+		pmid3 <- esearch(paste("(", gene.symb, "OR", gene.name, ")", "AND", keywd3))
+		pmid4 <- esearch(paste("(", gene.symb, "OR", gene.name, ")", "AND", keywd4))
+	
+		sumlist$GeneSymb[i] <- gene.symb
+		sumlist$entrezGeneID[i] <- geneId
+		sumlist$numtaxanes[i] <- length(unlist(pmid1))
+		sumlist$numProstate[i] <- length(unlist(pmid2))
+		sumlist$numTax_Prost[i] <- length(unlist(pmid3))
+		sumlist$numMeth[i] <- length(unlist(pmid4))
+
+		pmids_taxanes <- c(pmids_taxanes, unlist(pmid1))
+		pmids_Prost <- c(pmids_Prost, unlist(pmid2))
+		pmids_Tax_Prost <- c(pmids_Tax_Prost, unlist(pmid3))
+		pmids_Meth <- c(pmids_Meth, unlist(pmid4))
+	}
+	cat(i, "of", nrow(data), "\n")
+}
+
+
+write.table(sumlist, "Top1000_L5_annot_PubMed.txt", sep="\t")
+write.table(as.data.frame(pmids_taxanes), "PMids L5_taxanes list.txt", sep="\t")
+write.table(as.data.frame(pmids_Prost), "PMids L5_Prostate list.txt", sep="\t")
+write.table(as.data.frame(pmids_Tax_Prost), "PMids L5_Tax_Prost list.txt", sep="\t")
+write.table(as.data.frame(pmids_Meth), "PMids L5_Methyl list.txt", sep="\t")
+
+
+x<- pubmed(pmids)
+a <- xmlRoot(x)
+numAbst <- length(xmlChildren(a)); numAbst
+
+arts <- vector("list", length = numAbst)
+abstrs <- rep(NA, numAbst)
+
+	# for(i in 1:numAbst){
+	#	arts[[i]] <- buildPubMedAbst(a[[i]])
+	#	abstrs[i] <- abstText(arts[[i]])
+	# }
+
+
+absts <- list()
+for (i in 1:numAbst) {
+	absts[[i]] <- buildPubMedAbst(a[[i]])
+	}
+
+## file for the output
+
+output.title <- paste(gene.name, "PubMed.html")
+pmAbst2HTML(absts,filename=output.title)
+
+
+# Version 2 A construire !
+
+n <- length(Ids <- unique(data$EntrezGeneID))
+sumlist <- data.frame(GeneSymb = rep(NA, n), GeneName = NA, entrezGeneID = 0, FC = 0, numMeth = 0)
+
+keywd <- "prostate"
+pmids <- c()
+
+for (i in 1:n){			
+	geneId <- Ids[i]				
+	geneId <- as.character(geneId)
+	if(!is.na(geneId) & !is.null(geneId)){
+		test <- gsummary(geneId)
+		gene.symb <- as.character(as.table(test)[1])
+		gene.name <- as.character(as.table(test)[2])
+
+		pmid <- esearch(paste("(", gene.symb, "OR", gene.name, ")", "AND", keywd))
+	
+		sumlist$GeneSymb[i] <- gene.symb
+		sumlist$GeneName[i] <- gene.name
+		sumlist$entrezGeneID[i] <- geneId
+		sumlist$numMeth[i] <- length(unlist(pmid))
+		sumlist$FC[i] <- mean(data$FC[which(data$EntrezGeneID==geneId)], na.rm=T)
+
+		pmids <- c(pmids, unlist(pmid))
+	}
+	cat(i, "of", nrow(data), "\n")
+}
+
+
+write.table(sumlist, "Top1000_L5_annot_PubMed.txt", sep="\t")
+write.table(as.data.frame(pmids_taxanes), "PMids L5_taxanes list.txt", sep="\t")
+write.table(as.data.frame(pmids_Prost), "PMids L5_Prostate list.txt", sep="\t")
+write.table(as.data.frame(pmids_Tax_Prost), "PMids L5_Tax_Prost list.txt", sep="\t")
+write.table(as.data.frame(pmids_Meth), "PMids L5_Methyl list.txt", sep="\t")
+
+
+x<- pubmed(pmids)
+a <- xmlRoot(x)
+numAbst <- length(xmlChildren(a)); numAbst
+
+arts <- vector("list", length = numAbst)
+abstrs <- rep(NA, numAbst)
+
+	# for(i in 1:numAbst){
+	#	arts[[i]] <- buildPubMedAbst(a[[i]])
+	#	abstrs[i] <- abstText(arts[[i]])
+	# }
+
+
+absts <- list()
+for (i in 1:numAbst) {
+	absts[[i]] <- buildPubMedAbst(a[[i]])
+	}
+
+## file for the output
+
+output.title <- paste(gene.name, "PubMed.html")
+pmAbst2HTML(absts,filename=output.title)
+

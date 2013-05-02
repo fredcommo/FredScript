@@ -1,0 +1,24 @@
+CVtest2<-function(apprend,pred,V,...)	
+{
+	rand<-sample(V,dim(train)[1],replace=T)
+	erreur<-rep(0,max(rand));
+	erreur_bar<-0;
+
+	res<-train$letter;
+
+	for(i in sort(unique(rand)))
+	{
+		appr<-apprend(rand!=i,...);
+		res[rand==i]<-pred(appr,rand==i)
+
+	# Calcule l'erreur moyenne
+			tab<-table(train[rand==i,]$letter, res[rand==i]);
+			nb<-sum(tab);
+			# diag(tab)<-0;	# ça marche pas!
+			erreur[i]<-round(100*(sum(tab)-sum(diag(tab)))/sum(tab),2);
+	}
+	erreur_bar<-round(1/max(rand)*sum(erreur),2)
+	cat("Erreur moyenne= ",erreur_bar,"%\n");
+	list(res=res,erreur_bar=erreur_bar);
+}
+

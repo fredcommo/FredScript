@@ -1,0 +1,22 @@
+# Exemple d'edition .pdf
+# par défaut, le répertoire de sortie est le répertoire courant
+# format portrait height=29/cm(1),width=21/cm(1)
+# format paysage height=21/cm(1),width=29/cm(1)
+
+
+pdf("legends.pdf",height=29/cm(1),width=21/cm(1))
+	par(mfrow=c(2,1))
+
+	plot(y~x,type="n")
+	for (i in 1:25)
+	{
+	points(y[i]~x[i],pch=i,col=i,cex=1.5)
+	}
+
+	plot(y~x,type="n")
+	for (i in 1:8)
+	{
+	lines(y*i/4~x,lty=i,col=i)
+	}
+
+dev.off()	# sortir de la déviation

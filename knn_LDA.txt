@@ -1,0 +1,41 @@
+knn=1
+erreur<-rep(0,10)
+proba<-rep(0,27)
+for (knn in 1:10)
+
+{
+	for (i in 1:27)
+	{
+	test<-data.infos[i,]
+	train<-data.infos[-i,]
+	knnres[i]<-knn(train[,-1],test[,-1],cl=train$Loc,k=knn,l=knn-1,prob=T)
+	#knnres[i]<-ppv
+	#proba[i]<-attributes(ppv)$prob
+	}
+
+table.res<-table(data.infos$Loc,knnres)
+table.res
+
+proba
+
+erreur[knn]<-sum(table)-sum(diag(table))
+}
+
+	test<-data.info[1,]
+	train<-data.info[-1,]
+	knn(train[,-1],test[,-1],cl=train$Loc,k=1,prob=T)
+	attributes(.Last.value)
+
+
+class<-data.infos$Loc
+for (i in 1:dim(data.infos)[1])
+{
+	lda<-lda(Loc~.,data.infos[-i,c(1:14,45:56)])
+	class[i]<-predict(lda,data.infos[i,])$class
+}
+table(data.infos$Loc,class)
+cbind(as.data.frame(data.infos$Loc),class)->res
+rownames(res)<-rownames(data.infos)
+colnames(res)<-c("Groupe","Prediction")
+res
+

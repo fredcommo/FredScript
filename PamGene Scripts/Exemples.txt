@@ -1,0 +1,71 @@
+source("D:\\Stats\\Doc R\\Scripts R\\PamGene Scripts\\FitCurve.nlm.R")
+source("D:\\Stats\\Doc R\\Scripts R\\PamGene Scripts\\FitCurve.nlm3.R")
+source("D:\\Stats\\Doc R\\Scripts R\\PamGene Scripts\\FitCurve.nlm4.R")
+
+x<-c(2,12,22,32,42,52,62)
+
+par(mfrow=c(3,3))
+# Exemple1 (profil attendu)
+	bottom=100
+	top=1500
+	k=0.03
+	X.offset=min(x)
+	y<- bottom+(top-bottom)*(1-exp(-k*(x-X.offset)))+ rnorm(length(x),top/25,top/25)
+	#plot(y~x)
+	FitCurve.nlm3(x, y, graph.title="profil attendu")
+
+# Exemple2 (k élevé et écart y1 vs. y2 important)
+	bottom=35
+	top=3000
+	k=0.15
+	X.offset=min(x)
+	y<- bottom+(top-bottom)*(1-exp(-k*(x-X.offset)))+ rnorm(length(x),top/25,top/25)
+	#plot(y~x)
+	FitCurve.nlm3(x,y, graph.title="k élevé et écart y1 vs. y2 important")
+
+# Exemple3 (valeurs faibles, k élevé)
+	bottom=5
+	top=25
+	k=0.2
+	X.offset=min(x)
+	y<- bottom+(top-bottom)*(1-exp(-k*(x-X.offset)))+ rnorm(length(x),top/25,top/25)
+	#plot(y~x)
+	FitCurve.nlm3(x,y, graph.title="valeurs faibles, k élevé")
+
+# Exemple4 (valeurs faibles, k faible)
+	bottom=5
+	top=25
+	k=0.01
+	X.offset=min(x)
+	y<- bottom+(top-bottom)*(1-exp(-k*(x-X.offset)))+ rnorm(length(x),top/30,top/30)
+	#plot(y~x)
+	FitCurve.nlm3(x,y, graph.title="valeurs faibles, k faible")
+
+# Exemple5 (linéaire, k=0) ça marche si a>0 (ax+b)
+	bottom=5
+	top=5
+	k=0.0
+	X.offset=min(x)
+	y<- bottom+(top-bottom)*(1-exp(-k*(x-X.offset)))+ rnorm(length(x),top/25,top/25)
+	#plot(y~x)
+	FitCurve.nlm3(x,y, graph.title="k=0(~linéaire)")
+
+# Exemple6 (linéaire, ax+b)
+	y<- 0.3*x+3+rnorm(length(x),5,5)
+	#plot(y~x)
+	FitCurve.nlm3(x,y, graph.title="linéaire, ax+b (a>0.2)")
+
+# Exemple7 (linéaire, ax+b)
+	y<- 0.15*x+3+rnorm(length(x),5,5)
+	#plot(y~x)
+	FitCurve.nlm3(x,y, graph.title="linéaire, ax+b (a<0.2)")
+
+# Exemple8 (linéaire, -ax+b)
+	y<- -2*x+3+rnorm(length(x),10,10)
+	#plot(y~x)
+	FitCurve.nlm3(x,y, graph.title="linéaire, ax+b (a<0)")
+
+plot(y~x, type="n")
+legend("topleft",legend=c("Obs.values","kernel smoothing","exp model","Slope"), 
+	pch=c(19,-1,-1,-1), lty=c(0,3,1,1), col=c("blue2","red","lightblue3","blue3"),bty="n")
+

@@ -1,0 +1,118 @@
+classKoho2<-function(x,y,n,m,nbfois)
+{	# Répète nbfois et calcule la moyenne des proportions d'erreur
+	# (Apprentissage sur la totalité puis sélection de 10 patients)
+	
+		lg<-length(x[,1]);
+		pTEST<-10 #floor(lg/6);
+		pAPPR<-lg - pTEST;
+
+	
+		#Nombre de neurones entrés par l'utilisateur
+		nbn<-n*m;
+	
+		# Sélectionne des indiv. au hasard et extrait dans x_appr
+		#index.x<-sample(1:lg,pAPPR)
+		#x_appr<-x[index.x,];
+		x_appr<-as.matrix(x);
+	
+	
+		# Extrait les classes normal/tumeur des patients sélectionnés 
+		y_appr<-as.matrix(y);
+		#y_appr<- y_appr[index.x,];
+
+		table_prop<-rep(0,nbfois);
+		for(p in 1:nbfois)
+		{
+
+			# Algorithme de Kohonen sur les patients pour l'apprentissage
+			library(class);
+			sg<-somgrid(n,m);
+			radii<-c(seq(m+1,0,len=30),rep(0,10));
+			batchSOM(x_appr,sg,radii)->alontest;
+
+			# Partitionne le groupe en fonction des affectations 
+			bins<-as.numeric(knn1(alontest$codes,x_appr,1:nbn));
+
+			# Construit le graphe
+			plot(alontest$grid,type="n");
+			symbols(alontest$grid$pts[,1],alontest$grid$pts[,2],circles=rep(0.5,nbn),inches=FALSE,add=TRUE);
+			points(alontest$grid$pts[bins,]+rnorm(length(x[,1])*2,0,0.1),col=c("darkgreen","red")[y],pch=8,cex=2);
+
+
+			# Table des neurones
+			table(y_appr,bins)->table_appr;
+	
+
+			# Affectation d'une classe à chaque neurone par vote majoritaire
+
+				res<-matrix("Indet",nbn,1);	###  Indet par défaut,length(table_appr[1,]),
+				rownames(res)<-c(1:nbn); 	###length(table_appr[1,])
+					
+				for(i in 1:length(colnames(table_appr)))
+				{
+					num<-as.numeric(colnames(table_appr)[i])	
+						for(j in 1:nbn)	### length(table_appr[1,])
+						{						
+							if(j==num)
+								{
+									if(table_appr[1,i]<table_appr[2,i])
+										res[j,]<-rownames(table_appr)[2];
+
+									if(table_appr[1,i]>=table_appr[2,i])
+										res[j,]<-rownames(table_appr)[1];
+								}
+						}
+				}
+
+
+			### Construit la matrice des individus restants
+			index.x<-sample(1:lg,pTEST)
+			xrest<-x[index.x,];
+			yrest<-as.matrix(y[index.x]);
+
+			## Construit une nouvelle carte avec les neurones non-vides
+			as.numeric(colnames(table_appr))->indexNeurone;
+			alontest$codes2<-alontest$codes[indexNeurone,];
+
+
+			# Affecte les nouveaux patients et les place sur le graphe (nouvelle carte)
+			bins2<-as.numeric(knn1(alontest$codes2,xrest,1:length(indexNeurone)));
+			points(alontest$grid$pts[bins2,]+rnorm(pTEST*2,0,0.1),col="blue",pch=8,cex=2);
+
+			# Résultats
+			# Table de classement des patients testés
+			table(rownames(xrest),bins2)->table_rest;
+
+			# Table des vraies classes pour les patients testés
+			cbind(rownames(xrest),yrest)->vraiclasse;
+	
+	
+
+
+			# Construit la matrice des résultats Classement vs réel.
+
+			classif<-matrix("",length(xrest[,1]),3);
+			cbind(rownames(xrest),bins2)->classif;	
+
+			# Remplace le numéro de neurone par sa classe
+			classif[,2]<-res[bins2,];
+			cbind(classif,vraiclasse[,2])->classif;
+			colnames(classif)<-c("Patient","classé","réel");
+
+			# Calcule le % d'erreur de classement
+			prop<-0;
+			for(i in 1:length(xrest[,1]))
+				{
+					if(classif[i,2]!=classif[i,3])
+					prop<-prop+1;
+				}
+				#prop<-(prop/length(xrest[,1]))*100;	
+			table_prop[p]<-(prop/length(xrest[,1]))*100;
+
+		# Sorties
+	}
+	moyenne<-sum(table_prop)/nbfois;
+	list(prop=table_prop, moyenne_erreur=moyenne);
+	#list(Affectation=bins, table_appr=table_appr, Classe.neurones=res, classement=table_rest,Résultat=classif, proportion.erreur=prop);
+
+}

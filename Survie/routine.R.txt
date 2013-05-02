@@ -1,0 +1,70 @@
+routine<-function(theset, grp, time, event, plus, labtime, Ylab)
+
+{
+
+n.g <- length(levels(grp))
+
+ 
+
+surviefit(time=time, censor=event, class="", set=(grp==levels(grp)[1]),
+
+                        thedata=theset, ccol="black", conftype="none", Xlim=c(0, max(time)+plus),
+
+                        Xlab=paste(labtime), Wlab=Ylab)
+
+ 
+
+for (k in 2:n.g)
+
+{
+
+par(new=TRUE)
+
+ 
+
+surviefit(time=time, censor=event, class="", set=(grp==levels(grp)[k]),
+
+                        thedata=theset, ccol=k, conftype="none", Xlim=c(0, max(time)+plus),
+
+                        Xlab=paste(labtime), Wlab="")
+
+abline(h=c(.5), lty=2)
+
+}
+
+ 
+
+legend("topright", levels(grp),
+
+col=c("black", c(2:n.g)), cex=0.75, lty=1, lwd=1, bty="n")
+
+ 
+
+res1<-survdiff(Surv(time, event) ~ grp)
+
+ 
+
+res2<-round(coxphmodel(time=time, censor=event, 
+
+class=grp, covariables=0, thedata=theset), 2)
+
+ 
+
+## afficher les HR, p-values sur le graph
+
+#text(median(time)+plus, 0.4, paste("HR:", res2[1], "(", res2[3], "-", res2[4],")"), font=2)
+
+#text(median(time)+plus, 0.35, paste("p-value =", res2[5]), font=2)
+
+ 
+
+print(
+
+list(res1, res2)
+
+            )
+
+}
+
+ 
+

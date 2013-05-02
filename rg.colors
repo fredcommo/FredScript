@@ -1,0 +1,14 @@
+rg.colors<-function (n, alpha = 1) 
+{
+    if ((n <- as.integer(n[1])) > 0) {
+        even.n <- n%%2 == 0
+        k <- n%/%2
+        l1 <- k + 1 - even.n
+        l2 <- n - k + even.n
+        c(if (l1 > 0) hsv(h =8/20, s = seq.int(0.95, ifelse(even.n, 
+            0.95/k, 0), length.out = l1), v = 0.75, alpha = alpha), 
+            if (l2 > 1) hsv(h = 20/20, s = seq.int(0, 0.9, length.out = l2)[-1], 
+                v = 0.75, alpha = alpha))
+    }
+    else character(0)
+}

@@ -1,0 +1,11 @@
+CVtest<-function(apprend,pred,rand,...)
+{
+	res<-train$letter;
+	for(i in sort(unique(rand)))
+	{
+		#cat("fold",i,"\n",sep= "");
+		appr<-apprend(rand!=i,...);
+		res[rand==i]<-pred(appr,rand==i)
+	}
+	res;
+}

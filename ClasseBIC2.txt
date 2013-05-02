@@ -1,0 +1,23 @@
+ClasseBIC2<-function(x,kmax)
+{
+      n<-dim(x)[1];		# nb d'observations
+      p<-dim(x)[2];		# nb de variables
+      TRS<-rep(0,kmax);		# TraceS (Iw)
+      Nu<-rep(0,kmax);		# nb de paramètres libres
+	BIC1<-rep(0,kmax);	# Critère BIC(part1) = -2Log(Lc)
+      BIC2<-rep(0,kmax)		# Critère BIC(part2) = Nu*Log(Lc)
+
+
+	source("D:\\SY09\\TP3\\kmeans_nstart.R");
+
+        for(k in 2:(kmax+1))		# k = nb de classes possibles
+        {
+                res<-kmeans_nstart(x,k,nstart=10);
+                TRS[k-1]<-(1/n)*sum(res$withinss);
+                Nu[k-1]<-p*k+1;
+                lc<-(-1/2)*(n*p+n*p*(log((TRS[k-1])/p))) - n*log(k) + ((n*p)/2) * log(2*pi);
+                BIC1[k-1]<- -2*lc ;
+                BIC2[k-1]<- (Nu[k-1])*(log(n));
+        }
+        list(TRS,Nu,BIC1,BIC2);
+}

@@ -1,0 +1,43 @@
+classKoho3<-function(x,y,n,m,nbfois)
+
+{
+			lg<-length(x[,1]);
+			pTEST<-floor(lg/6);
+			pAPPR<-lg - pTEST;
+
+	
+			#Nombre de neurones entrés par l'utilisateur
+			nbn<-n*m;
+	
+			# Sélectionne des indiv. au hasard et extrait dans x_appr
+			index.x<-sample(1:lg,pAPPR)
+			x_appr<-as.matrix(x)
+
+	
+	
+			# Extrait les classes normal/tumeur des patients sélectionnés 
+			y_appr<-as.matrix(y);
+			#y_appr<- y_appr[index.x,];
+
+		
+
+		table_prop<-rep(0,nbfois);
+		for(p in 1:nbfois)
+			{
+
+			# Algorithme de Kohonen sur les patients pour l'apprentissage
+			library(class);
+			sg<-somgrid(n,m);
+			radii<-c(seq(m,0,len=30),rep(0,10));
+			batchSOM(x_appr,sg,radii)->alontest;
+
+			# Partitionne le groupe en fonction des affectations 
+			bins<-as.numeric(knn1(alontest$codes,x_appr,1:nbn));
+
+			# Construit le graphe
+			plot(alontest$grid,type="n");
+			symbols(alontest$grid$pts[,1],alontest$grid$pts[,2],circles=rep(0.5,nbn),inches=FALSE,add=TRUE);
+			points(alontest$grid$pts[bins,]+rnorm(length(x[,1])*2,0,0.1),col=c("red","darkgreen")[y],pch=8,cex=2);
+
+			}
+}

@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0126)http://mail3c.utc.fr/horde3c/imp/view.php?thismailbox=INBOX&index=1465&id=3&actionID=113&mime=316e10d41a2b769d12966754daeedcfe -->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<META content="MSHTML 6.00.2800.1491" name=GENERATOR></HEAD>
+<BODY>
+<P class=fixed>ClasseBIC2&lt;-function(x,kmax) <BR>{ <BR>&nbsp;&nbsp; &nbsp; 
+&nbsp;n&lt;-dim(x)[1]; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;# 
+nb d'observations <BR>&nbsp;&nbsp; &nbsp; &nbsp;p&lt;-dim(x)[2]; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;# nb de variables <BR>&nbsp;&nbsp; 
+&nbsp; &nbsp;TRS&lt;-rep(0,kmax); &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp;# TraceS (Iw) <BR>&nbsp;&nbsp; &nbsp; &nbsp;Nu&lt;-rep(0,kmax); 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;# nb de paramhtres libres 
+<BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;BIC1&lt;-rep(0,kmax); &nbsp; &nbsp; &nbsp; 
+&nbsp;# Crithre BIC(part1) = -2Log(Lc) <BR>&nbsp;&nbsp; &nbsp; 
+&nbsp;BIC2&lt;-rep(0,kmax) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp;# Crithre BIC(part2) = Nu*Log(Lc) <BR><BR><BR>&nbsp;&nbsp; &nbsp; &nbsp; 
+&nbsp;source("D:\\SY09\\TP3\\kmeans_nstart.R"); <BR><BR>&nbsp;&nbsp; &nbsp; 
+&nbsp; &nbsp;for(k in 2:(kmax+1)) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp;# k = nb de classes possibles <BR>&nbsp;&nbsp; &nbsp; &nbsp; 
+&nbsp;{ <BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp;res&lt;-kmeans_nstart(x,k,nstart=10); <BR>&nbsp;&nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;TRS[k-1]&lt;-(1/n)*sum(res$withinss); 
+<BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp;Nu[k-1]&lt;-p*k+1; <BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp;lc&lt;-(-1/2)*(n*p+n*p*(log((TRS[k-1])/p))) - n*log(k) + ((n*p)/2) 
+* log(2*pi); <BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp;BIC1[k-1]&lt;- -2*lc ; <BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp;BIC2[k-1]&lt;- (Nu[k-1])*(log(n)); <BR>&nbsp;&nbsp; &nbsp; &nbsp; 
+&nbsp;} <BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;list(TRS,Nu,BIC1,BIC2); 
+<BR>}</P></BODY></HTML>

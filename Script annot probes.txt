@@ -1,0 +1,128 @@
+library(seqinr)
+library(XML)
+library(annotate)
+
+gsearch <- function (geneId, database){
+	gsrch.stem <- "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
+	gsrch.mode <- paste("db=", database, "&term=", sep = "")
+	doc <- xmlTreeParse(paste(gsrch.stem, gsrch.mode, geneId, sep=""),isURL = TRUE, useInternalNodes = TRUE)
+	sapply(c("//Id"), xpathApply, doc = doc, fun = xmlValue)
+	}
+
+
+gsummary <- function (id, database){
+	sum.stem <- "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?"
+	sum.mode <- paste("db=", database, "&id=", sep = "")
+	doc <- xmlTreeParse(paste(sum.stem, sum.mode, id, sep=""), isURL = TRUE, useInternalNodes = TRUE)
+	sapply(c("//Item"), xpathApply, doc = doc, fun=xmlValue)
+	}
+
+probe.list <- read.csv("F:/Sauvegarde Portable/Databases GE/data van veer/ProbeSeq.txt", header = T, sep = "\t")
+probe.list$Symbol <- as.character(probe.list$Symbol)
+probe.list$ref <- as.character(probe.list$ref)
+
+# stopped at : 12510
+
+my.annots <- data.frame(Id = rep(NA, nrow(probe.list)), Symb = NA, Acc1 = NA, DB = NA, Acc2 = NA, Descrip = NA)
+
+for(i in 13325:nrow(probe.list)){	# 
+	db <- ref <- symb <- Unigene.Acc <- desc <- NA
+	database <- "unigene"
+	id = as.character(probe.list$ref[i])	#"AI151500"	#"NM_003002"
+	id.search <- gsearch(id, database)
+	test.http <- try(my.query <- gsummary(as.character(id.search), database))
+
+	if(class(test.http)=="try-error" | length(my.query)==1){
+		database = "unists"
+		id.search <- gsearch(id, database)
+		test.http <- try(my.query <- gsummary(as.character(id.search), database))
+
+		if(class(test.http)=="try-error" | length(my.query)==1){
+			database = "nucleotide"
+			id.search <- gsearch(id, database)
+			test.http <- try(my.query <- gsummary(as.character(id.search), database))
+
+			if(class(test.http)=="try-error" | length(my.query)==1){
+				database = "nucest"
+				id.search <- gsearch(id, database)
+				my.query <- gsummary(as.character(id.search), database)
+				test.http <- try(my.query <- gsummary(as.character(id.search), database))
+				}
+			}
+		}
+	if(class(test.http)!="try-error" & length(my.query)>2){
+		db <- database
+		if(db=="unists"){
+			ref <- my.query[[1]]
+			if(length(my.query)>=6) symb <- my.query[[6]]
+			Unigene.Acc <- NA
+			if(length(my.query)>=6) desc <- paste(my.query[[4]], my.query[[5]], my.query[[6]])
+			}
+		if(db=="unigene"){
+			ref <- id
+			symb <- my.query[[4]]
+			Unigene.Acc <- my.query[[5]]
+			desc <- paste(my.query[[1]], "(", my.query[[3]], ")")
+			}
+		if(db=="nucleotide" | db=="nucest"){
+			ref <- id
+			symb <- my.query[[1]]
+			Unigene.Acc <- my.query[[3]]
+			desc <- my.query[[2]]
+			}
+		}
+
+	my.annots[i, ] <- c(id, symb, ref, db, Unigene.Acc, desc)
+	cat(i, "of", nrow(probe.list), id, "found in", db, "as", ref, "and", symb, "\n")
+	}
+
+
+
+
+
+#######################################################
+
+if == "EST"
+gsearch <- function (geneId){
+	gsrch.stem <- "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
+	gsrch.mode <- "db=unists&term="
+	doc <- xmlTreeParse(paste(gsrch.stem, gsrch.mode, geneId, sep=""),isURL = TRUE, useInternalNodes = TRUE)
+	sapply(c("//Id"), xpathApply, doc = doc, fun = xmlValue)
+	}
+
+
+gsummary <- function (id){
+	sum.stem <- "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?"
+	sum.mode <- "db=unists&id="
+	doc <- xmlTreeParse(paste(sum.stem, sum.mode, id, sep=""), isURL = TRUE, useInternalNodes = TRUE)
+	sapply(c("//Item"), xpathApply, doc = doc, fun=xmlValue)
+	}
+
+id = "D25274"	# id = "AI151500"	# id = "NM_003002"
+id.search <- gsearch(id)
+gsummary(as.character(id.search))
+
+
+# acc_num à rehercher
+probe.list <- read.csv("F:/Sauvegarde Portable/Databases GE/data van veer/ProbeSeq.txt", header = T, sep = "\t")
+probe.list$Symbol <- as.character(probe.list$Symbol)
+probe.list$ref <- as.character(probe.list$ref)
+
+DB <- c()
+for(i in 197:nrow(probe.list)){	#
+	db <- NA
+	if (as.character(probe.list$Symbol[i])!="EST"){
+		acc = as.character(probe.list$ref[i])
+		prot = "myprot"
+		search <- where.is.this.acc(acc, stopAtFirst = TRUE)
+		if(length(search)>0){
+			choosebank(search)
+			id <- paste("AC=", acc, " et sp=homo sapiens", sep = "")
+			Name <- getName(query(prot, id))
+			probe.list$Symbol[i] <- Name
+			db <- search
+			}
+		}
+	DB <- c(DB, db)
+	cat(i, "of", nrow(probe.list), Name, "\t")
+	}

@@ -1,0 +1,47 @@
+CEM<-function(x,k,nstart)
+{
+
+	##################
+	# initialisation #
+	##################
+
+	#### Choix des centres initiaux
+
+	n<-dim(x)[1];
+	p<-dim(x)[2];
+	MU<-matrix(0,k,p);
+
+	#initialisation de l'index des centres
+	indexMU<-sample(1:n,k);
+
+	#initialisation des centres
+	MU <- x[indexMU , ];
+
+	#initialisation des variances (tous le monde a 1)
+	sigma<-rep(1,k);
+
+	#initialisation des proportions
+	proportion<-rep(1/k,k);
+
+
+
+	##############
+	# iterations #
+	##############
+
+	#### E
+
+	tik<-CEM.etapeE(x[,1],MU[,1],sigma,proportion);
+
+
+	#### C
+	cluster<-apply(logtik,1,which.max);	
+
+
+	#### M
+	groups<-split(x[,1],cluster);
+
+	MU<-lapply(groups,mean); ########### transformer en tableau !!!!
+
+	#proportion<-table(cluster)/length(x[,1]);
+}

@@ -1,0 +1,20 @@
+# facultatif?
+new("aafGenBank", as.character(clones.info$Accession))->test
+ getURL(test)[[1]]
+[1] "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=search&db=nucleotide&term=AK026901%5BACCN%5D&doptcmdl=GenBank"
+#
+
+best.index<-which(clones.summary$PropGain>=0.2 | clones.summary$PropLost>=0.2)
+
+> 
+clones.info[best.index,]
+             Clone Target Chrom     kb    Band Bras Accession
+2985  A_14_P131176  undef     1 177645  1q25.3   1q  AB046834
+9090  A_14_P103774  undef     3 163997  3q26.1   3q  BC019327
+9497  A_14_P126733  undef     3 196270    3q29   3q NM_152531
+25045 A_14_P104489  undef    11 118503 11q23.3  11q NM_015517
+39169 A_14_P119524  undef    21  15510 21q21.1  21q      <NA>
+
+> clones.info[best.index,]->best
+
+htmlpage(best$Accession,"test.gb4.html",othernames=as.data.frame(best[,-c(2,7)]),table.head=c("Accession#",colnames(best[,-c(2,7)])),repository="gb")

@@ -1,0 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0126)http://mail3c.utc.fr/horde3c/imp/view.php?thismailbox=INBOX&index=1465&id=2&actionID=113&mime=3310fe9b98ea25e2ccff93ad6aa95a18 -->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<META content="MSHTML 6.00.2800.1491" name=GENERATOR></HEAD>
+<BODY>
+<P class=fixed>## Prend data et un nombre de centres en arguments <BR>## Calcule 
+nfois (nstart aliatoires) l'inertie intra-classes ($withinss) et retient la 
+meilleure partition. 
+<BR><BR><BR>kmeans_nstart&lt;-function(x,nbcenters,iter.max=10000,nstart=10) 
+<BR>{ <BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;critere&lt;-Inf; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;# initialise ` la valeur max 
+<BR><BR><BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;for(i in 1:nstart) <BR>&nbsp;&nbsp; 
+&nbsp; &nbsp; &nbsp;{ <BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp;cur_res&lt;-kmeans(x,nbcenters,iter.max); <BR>&nbsp;&nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;cur_critere&lt;-sum(cur_res$withinss); 
+<BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+<BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp;if(cur_critere&lt;critere) <BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp;{ <BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;critere&lt;-cur_critere; <BR>&nbsp;&nbsp; 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp;res&lt;-cur_res; <BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+&nbsp; &nbsp;} <BR>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;} <BR><BR>&nbsp;&nbsp; 
+&nbsp; &nbsp; &nbsp;res; <BR>}</P></BODY></HTML>
