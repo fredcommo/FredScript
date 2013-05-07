@@ -1,6 +1,6 @@
 pcaTrace <- function(Data, PCA, Dim = 2:3,...){
   require(corpcor)
-  source('/Users/fredcommo/Documents/MyProjects/Fred_Scripts/Richard.w5PL.v2.R')
+  source('/Users/fredcommo/Documents/MyProjects/FredScripts/Richard.w5PL.v2.R')
   X = scale(PCA$x[,Dim])
   X <- as.data.frame(X)
   D <- rowSums(X^2)
@@ -10,9 +10,9 @@ pcaTrace <- function(Data, PCA, Dim = 2:3,...){
   #par(mfrow = c(3,2))
   #graphValues <- c(1e-3, 0.1, 0.8)
   useTrace = T; Score <- c()
-  cat('Testing a = ')
+  cat('Testing\n')
   for(a in a.values){
-    cat('\t', a)
+    cat('\talpha: ', a)
     alpha = 10^(-a)
     Pmax = 1 - alpha
     Q <- qchisq(p = Pmax, df = ncol(X))
@@ -41,6 +41,7 @@ pcaTrace <- function(Data, PCA, Dim = 2:3,...){
 #           plot(acpTest$x, cex = pcex, xlim = range(-100, 100),
 #                pch = 19, col = rgb(0.5, 0, 0.5, 0.5), main = paste('Trace: ', round(tmpTrace, 2)))
 #         }
+        cat('\t#Probes:', lInf, '\tTrace:', tmpTrace, '\n')
       }
       Score <- rbind(Score, tmpScore)
       }

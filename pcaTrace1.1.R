@@ -1,26 +1,28 @@
 pcaTrace1.1 <- function(Data, PCA, Dim = 2:3,...){
-  source('/Users/fredcommo/Documents/MyProjects/Fred_Scripts/Richard.w5PL.v2.R')
+  source('/Users/fredcommo/Documents/MyProjects/FredScripts/Richard.w5PL.v2.R')
   X = scale(PCA$x[,Dim])
   X <- as.data.frame(X)
   D <- rowSums(X^2)
 #  a.values <- 10^(seq(log10(1e-4), log10(1e-1), len = 12))
-  a.values <- c(1e-4, 1e-3, 1e-2, 0.1*2^seq(0, 8))
+  a = 0.1
+  for(i in 1:8) a <- c(a, a[length(a)]*2)
+  a.values <- c(1e-4, 1e-3, 1e-2, a)
   
-  cat('Testing a = ')
+  cat('Testing\n')
   Score <- lapply(a.values, function(a){
-    cat('\t', a)
+    cat('\talpha:', a)
     alpha = 10^(-a)
     Pmax = 1 - alpha
     Q <- qchisq(p = Pmax, df = ncol(X))
     inform <- which(D <= Q)
     lInf <- length(inform)
-    tmpScore <- NA
     
-    if(lInf>=10 & lInf<nrow(Data)){
+    if(lInf>=2 & lInf<nrow(Data)){
       subData <- Data[inform,]
       acpTest <- prcomp(t(subData))
       tmpTrace <- sum(diag(var(acpTest$x[,1:min(10, ncol(acpTest$x))])))
       tmpScore <- c(aValues = a, nProbes = lInf, Trace = tmpTrace)
+      cat('\t#Probes:', lInf, '\tTrace:', tmpTrace, '\n')
       tmpScore
       }
     }
