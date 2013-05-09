@@ -109,8 +109,8 @@ init <- c(Fb.ini, Fmax.ini, b.ini, c.ini, d.ini)
 # Repr?sentations graphiques
 	if(Plot){
 	plot(y~x, type = 'n',...)
-	lines(newy~newx, col = pcol, lwd = 2)
-	lines(I(A+B*x)~x, col = tan.col, lwd = 1)
+	lines(newy~newx, col = pcol,...)
+	lines(I(A+B*x)~x, col = tan.col, lwd = 2)
 	abline(h = 0, lwd = 1, lty = 3, col = 'grey75')
 	if(add.intercept) points(-A/B, 0, pch = 19, col = "red")
 	}

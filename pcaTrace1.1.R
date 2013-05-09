@@ -51,6 +51,6 @@ pcaTrace1.1 <- function(Data, PCA, Dim = 2:3,...){
   y = y/(max(y)*1.01)*100
   if(any(y <=0)) y[y<=0] <- 1e-3
   model <- Richard.w5PL.v2(x, y, w = 0.25, Plot = TRUE, add.points = TRUE,
-                            xlab = expression(-Log10(aValues)), ylab = 'Information (%)')#,...)  
+                            xlab = expression(-Log10(aValues)), ylab = 'Information (%)',...)  
   return(list(m = nrow(Data), n = ncol(Data), PCdim = ncol(X), Dist = D, Score = Score, lModel = model))
 }
