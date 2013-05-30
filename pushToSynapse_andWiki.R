@@ -102,7 +102,7 @@ for (l in 2:length(listFiles)){
   cat('\n')
 }
 
-# Heler function: add legends.
+# Helper function: add legends.
 .mkdText <- function(fileName){
   if(grepl('Original', fileName)) markdownText <- "###Original PCA:\n*PCA on samples using the full matrix.*"
   if(grepl('PCAfilt', fileName)) markdownText <- "###PCA on features:\n*Using 2nd and 3rd axes, high zero frequencies are located at the center.*"
@@ -111,3 +111,9 @@ for (l in 2:length(listFiles)){
   if(grepl('Trace', fileName)) markdownText <- "###Information curve:\n*Samples spread increasing according to the information brought by new probes.*"
   return(markdownText)
 }
+
+# Using the cache
+# Save in synapse: it works using .rds or .rbin
+save(fileName, file = file.path(tempdir(), paste0(fileName, '.rds')))
+profileS4 <- File(file.path(tempdir(), paste0(fileName, '.rds')), parentId = 'syn1864121')
+profileS4 <- synStore(profileS4)

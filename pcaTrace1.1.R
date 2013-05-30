@@ -34,7 +34,9 @@ pcaTrace1.1 <- function(Data, PCA, Dim = 2:3,...){
   acpTest <- prcomp(t(Data))
   last.a <- Score$aValues[nrow(Score)]
   tmpTrace <- sum(diag(var(acpTest$x[,1:min(10, ncol(acpTest$x))])))
-  tmpScore <- cbind(aValues = c(last.a*2, last.a*4), nProbes = rep(nrow(Data), 2), Trace = rep(tmpTrace, 2))
+  tmpScore <- cbind(aValues = c(last.a*2, last.a*4, last.a*8),
+                    nProbes = rep(nrow(Data), 3),
+                    Trace = rep(tmpTrace, 3))
   Score <- rbind(Score, tmpScore)
   
   cat('\n')
