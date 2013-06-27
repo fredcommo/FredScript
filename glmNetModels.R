@@ -18,7 +18,25 @@ require(glmnet)
   return(list(Beta = Beta, aveBeta = aveBeta, Ranks = Ranks, Freq = Freq, Score = Score))
 }
 
-.netModel1 <- function(GE, resp, B = 100, Nfold = 10, Nlambda = 100, alpha = 0.1, fileName,...){
+.trainTest <- function(xtrain, ytrain, alpha, Nfold){
+    cvnetModel <- cv.glmnet(x = t(xtrain), y = yTrain,
+                            alpha = alpha, nfolds = Nfold,
+                            family = 'gaussian')
+    bestL <- cvnetModel$lambda.min
+    bestB <- cvnetModel$glmnet.fit$beta[, which(cvnetModel$lambda == bestL)]
+    return(bestB)
+}
+
+.validTest <- function(xtrain, ytrain, xtest, ytest, alpha, Nfold){
+  cvnetModel <- cv.glmnet(x = t(xtrain), y = ytrain, alpha = alpha, nfolds = Nfold, family = 'gaussian') 
+  bestL <- cvnetModel$lambda.min
+  bestB <- cvnetModel$glmnet.fit$beta[, which(cvnetModel$lambda == bestL)]
+  fit <- predict(cvnetModel, newx = t(testSet[geneIndex,]), s = bestL)
+  pearsCor <- as.numeric(cor(fit, yTest))
+  return(list(bestL = bestL, bestB = bestB, fit = fit))
+}
+  
+.netModel1 <- function(GE, resp, B = 100, Nfold = 10, alpha = 0.1, fileName,...){
   cat('build model\n')
   #GE <- Data
   #resp <- mekResp
@@ -28,40 +46,27 @@ require(glmnet)
     GE <- GE[, -NAs]
     resp = resp[-NAs]
   }
-  trainIndex <- sample(1:length(resp), length(resp)*0.70)
-  trainSet <- GE[ ,trainIndex]
-  yTrain <- resp[trainIndex]
-  testSet <- GE[ ,-trainIndex]
-  yTest <- resp[-trainIndex]
+  Index <- sample(1:length(resp), length(resp)*0.70)
+  xTrain <- GE[ ,Index]
+  yTrain <- resp[Index]
+  xTest <- GE[ ,-Index]
+  yTest <- resp[-Index]
   
   train <- lapply(seq(1, B), function(b){
-    bIndex <- sample(1:ncol(trainSet), replace = TRUE)
-    cvnetModel <- cv.glmnet(x = t(trainSet[,bIndex]),
-                            y = yTrain[bIndex],
-                            alpha = alpha, nfolds = Nfold, nlambda = Nlambda,
-                            family = 'gaussian')
-    bestL <- cvnetModel$lambda.min
-    bestB <- cvnetModel$glmnet.fit$beta[, which(cvnetModel$lambda == bestL)]
-    # Keep the beta values and rank them.
-    cat(b, '\tlambda:', bestL, '\tnonZero beta:', sum(bestB != 0), '\tcvm:', min(cvnetModel$cvm),'\n')
-    bestB
+    bIndex <- sample(1:ncol(xTrain), replace = TRUE)
+    .trainTest(xTrain[,bindex], yTrain[bindex])
   })
   
   # Scores features
   trainScores <- .netScores(do.call(cbind, train))
   score <- trainScores$Score
-  geneIndex <- which(score > 0)
+  q <- min(score[score>0], na.rm = TRUE)
+  geneIndex <- which(score > q)
   cat(length(geneIndex), 'found with non Zero beta values\n')
-  cvnetModel <- cv.glmnet(x = t(trainSet[geneIndex,]), y = yTrain, alpha = alpha, nfolds = Nfold, nlambda = Nlambda, family = 'gaussian') 
-  bestL <- cvnetModel$lambda.min
-  bestB <- cvnetModel$glmnet.fit$beta[, which(cvnetModel$lambda == bestL)]
-
-  fit <- predict(cvnetModel, newx = t(testSet[geneIndex,]), s = bestL)
-  lmTest <- lm(fit ~ yTest)
-  r <- summary(lmTest)$adj.r.squared
-  pearsCor <- as.numeric(cor(fit, yTest))
-  return(list(trainScore = trainScores, model = cvnetModel, bestL = bestL, bestB = bestB,
-             boostGenes = geneIndex, y = yTest, yFit = fit, pearsCor = pearsCor))
+  valid <- .validTest(xTrain[geneIndex,], yTrain, xTest[geneIndex,], yTest, alpha, Nfold)
+  return(list(trainScore = trainScores,
+              bestL = valid$bestL, bestB = valid$bestB,
+              boostGenes = geneIndex, y = yTest, yFit = valid$fit, pearsCor = valid$pearsCor))
 }
 
 .netModel2 <- function(GE, resp, B = 100, Nfold = 10, Nlambda = 100, kMax = 500, fileName,...){

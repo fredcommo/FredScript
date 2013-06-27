@@ -87,22 +87,23 @@ IC50.5P <- function(dose, resp, sd = NULL, Wcoef = 0.25, Plot = TRUE, unit="nM",
 				S2 <- Q/(length(x)-2)
 				s <- sqrt(S2)
 
-				MC.X50 <- rep(0, 10000)
-
-				for (i in 1:10000){
-					yi <- Y50 + rnorm(1, 0, s)
-					MC.X50[i] <- best.xmid - 1/best.scal*log10(((yi-best.bottom)/(best.top-best.bottom))^(-1/best.s) - 1)
+				if(is.na(X50)) min.D50 <- max.D50 <- NA
+				else{
+					MC.X50 <- rep(0, 10000)
+					for (i in 1:10000){
+						yi <- Y50 + rnorm(1, 0, s)
+						MC.X50[i] <- best.xmid - 1/best.scal*log10(((yi-best.bottom)/(best.top-best.bottom))^(-1/best.s) - 1)
+						}
+					min.X50 <- quantile(MC.X50, probs=0.025, na.rm=T)
+					min.D50 <- signif(10^min.X50, 2)
+					max.X50 <- quantile(MC.X50, probs=0.975, na.rm=T)
+					max.D50 <- signif(10^max.X50, 2)
 					}
-				min.X50 <- quantile(MC.X50, probs=0.025, na.rm=T)
-				min.D50 <- signif(10^min.X50, 2)
-				max.X50 <- quantile(MC.X50, probs=0.975, na.rm=T)
-				max.D50 <- signif(10^max.X50, 2)
-
 
 	# Graphics
 	if(Plot){
 		if(!Add) plot(y[-1] ~ x[-1], pch = 20, cex = 2.5, col = pCol,
-							xlim = range(minx, maxx), xlab = paste("Log10", "[", unit, "]", sep = ""), ylim = range(0, 1),...)
+							xlim = range(minx, maxx), ylim = range(0, 1),...)
 		else points(y[-1] ~ x[-1], pch = 20, cex = 2.5, col = pCol, xlim = range(minx, maxx), ylim = range(0, max(maxy, Y.best)))
 
 		if(AddIC){
